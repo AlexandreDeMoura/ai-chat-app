@@ -1,5 +1,4 @@
-// Chat.tsx (Main component)
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Conversation, Message as MessageType } from './types/types';
 import Sidebar from './components/Sidebar';
 import Home from './screens/Home';
@@ -7,9 +6,25 @@ import CurrentConversation from './screens/CurrentConversations';
 import MessageInput from './components/MessageInput';
 
 const App: React.FC = () => {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>(() => {
+    const savedConversations = localStorage.getItem('conversations');
+    return savedConversations ? JSON.parse(savedConversations) : [];
+  });
   const [currentConversation, setCurrentConversation] = useState<string | null>(null);
   const [showHome, setShowHome] = useState(true);
+
+  // Load conversations from localStorage when the component mounts
+  useEffect(() => {
+    const savedConversations = localStorage.getItem('conversations');
+    if (savedConversations) {
+      setConversations(JSON.parse(savedConversations));
+    }
+  }, []);
+
+  // Save conversations to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('conversations', JSON.stringify(conversations));
+  }, [conversations]);
 
   const simulateAIResponse = (convId: string) => {
     setTimeout(() => {

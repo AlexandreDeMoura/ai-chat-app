@@ -7,4 +7,5 @@ export interface Message {
     id: string;
     title: string;
     messages: Message[];
+    lastUpdated: Date; 
   }

@@ -13,40 +13,37 @@ const App: React.FC = () => {
   const [currentConversation, setCurrentConversation] = useState<string | null>(null);
   const [showHome, setShowHome] = useState(true);
 
-  // Load conversations from localStorage when the component mounts
   useEffect(() => {
     const savedConversations = localStorage.getItem('conversations');
     if (savedConversations) {
-      setConversations(JSON.parse(savedConversations));
+      const parsedConversations = JSON.parse(savedConversations, (key, value) => {
+        if (key === 'lastUpdated') {
+          return new Date(value);
+        }
+        return value;
+      });
+      setConversations(parsedConversations);
     }
   }, []);
 
-  // Save conversations to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem('conversations', JSON.stringify(conversations));
+    localStorage.setItem('conversations', JSON.stringify(conversations, (key, value) => {
+      if (key === 'lastUpdated') {
+        return value;
+      }
+      return value;
+    }));
   }, [conversations]);
-
-  const simulateAIResponse = (convId: string) => {
-    setTimeout(() => {
-      const aiResponse: MessageType = { text: "This is a simulated AI response.", isUser: false };
-      setConversations(prevConversations => 
-        prevConversations.map(conv => 
-          conv.id === convId 
-            ? { ...conv, messages: [...conv.messages, aiResponse] }
-            : conv
-        )
-      );
-    }, 1000);
-  };
 
   const handleSubmit = (input: string) => {
     if (input.trim()) {
       const newMessage: MessageType = { text: input, isUser: true };
+      const currentTime = new Date();
       if (currentConversation) {
         setConversations(prevConversations => 
           prevConversations.map(conv => 
             conv.id === currentConversation 
-              ? { ...conv, messages: [...conv.messages, newMessage] }
+              ? { ...conv, messages: [...conv.messages, newMessage], lastUpdated: currentTime }
               : conv
           )
         );
@@ -56,7 +53,8 @@ const App: React.FC = () => {
         const newConversation: Conversation = {
           id: newConversationId,
           title: input.slice(0, 30),
-          messages: [newMessage]
+          messages: [newMessage],
+          lastUpdated: currentTime
         };
         setConversations(prev => [...prev, newConversation]);
         setCurrentConversation(newConversationId);
@@ -64,6 +62,20 @@ const App: React.FC = () => {
       }
       setShowHome(false);
     }
+  };
+
+  const simulateAIResponse = (convId: string) => {
+    setTimeout(() => {
+      const aiResponse: MessageType = { text: "This is a simulated AI response.", isUser: false };
+      const currentTime = new Date();
+      setConversations(prevConversations => 
+        prevConversations.map(conv => 
+          conv.id === convId 
+            ? { ...conv, messages: [...conv.messages, aiResponse], lastUpdated: currentTime }
+            : conv
+        )
+      );
+    }, 1000);
   };
 
   const startNewChat = () => {

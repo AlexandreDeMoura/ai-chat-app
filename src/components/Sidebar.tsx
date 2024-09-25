@@ -3,6 +3,7 @@ import { Conversation } from '../types/types';
 import { ReactComponent as ChatIcon } from '../img/chat-icon.svg';
 import { ReactComponent as OngoingPromptIcon } from '../img/ongoing-prompt.svg';
 import { ReactComponent as NewChatIcon } from '../img/new-chat.svg';
+import { ReactComponent as SavedConvIcon } from '../img/saved-conv.svg';
 
 interface Props {
   conversations: Conversation[];
@@ -15,7 +16,7 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
   <div className="w-64 bg-white border-r flex flex-col h-screen overflow-hidden">
     <div className="p-4 border-b">
       <div className="flex items-center mb-4">
-        <ChatIcon className="text-purple-500 mr-2" />
+        <ChatIcon className="fill-indigo-700 mr-2" />
         <span className="font-semibold text-lg">Chat AI</span>
       </div>
       <div className="flex items-center text-gray-600">
@@ -28,9 +29,15 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
         <div 
           key={conv.id}
           onClick={() => selectConversation(conv.id)}
-          className={`p-2 rounded-lg cursor-pointer ${currentConversation === conv.id ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+          className={`flex items-center p-2 rounded-lg cursor-pointer group 
+            ${currentConversation === conv.id ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
         >
-          {conv.title}
+          <SavedConvIcon className={`mr-2 flex-shrink-0 
+            ${currentConversation === conv.id ? 'fill-indigo-700' : 'fill-neutral-600 group-hover:fill-indigo-700'}`} />
+          <div className={`truncate 
+            ${currentConversation === conv.id ? 'text-indigo-700' : 'text-neutral-600 group-hover:text-indigo-700'}`}>
+            {conv.title.length > 30 ? `${conv.title.substring(0, 30)}...` : conv.title}
+          </div>
         </div>
       ))}
     </div>

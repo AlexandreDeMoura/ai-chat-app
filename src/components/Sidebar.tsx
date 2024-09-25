@@ -1,7 +1,6 @@
 import React from 'react';
 import { Conversation } from '../types/types';
 import { ReactComponent as ChatIcon } from '../img/chat-icon.svg';
-import { ReactComponent as OngoingPromptIcon } from '../img/ongoing-prompt.svg';
 import { ReactComponent as NewChatIcon } from '../img/new-chat.svg';
 import { ReactComponent as SavedConvIcon } from '../img/saved-conv.svg';
 
@@ -18,10 +17,6 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
       <div className="flex items-center mb-4">
         <ChatIcon className="fill-indigo-700 mr-2" />
         <span className="font-semibold text-lg">Chat AI</span>
-      </div>
-      <div className="flex items-center text-gray-600">
-        <OngoingPromptIcon className="mr-2" width={18} height={18} />
-        <span className="text-sm">Ongoing prompt</span>
       </div>
     </div>
     <div className="flex-1 overflow-y-auto p-4 space-y-2">

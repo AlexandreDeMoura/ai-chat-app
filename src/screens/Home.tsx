@@ -5,10 +5,10 @@ import { ReactComponent as AssistantIcon } from '../img/assistant.svg';
 import { ReactComponent as PlanningIcon } from '../img/planning.svg';
 
 const optionsData = [
-  { icon: <DraftEmailIcon className="w-6 h-6 text-purple-500" />, title: "Draft email", description: "Generate email for any occasion you need.", bgColor: "bg-indigo-50" },
-  { icon: <WriteEssayIcon className="w-6 h-6 text-green-500" />, title: "Write an Essay", description: "Generate essay for any occasion you need.", bgColor: "bg-green-50" },
-  { icon: <PlanningIcon className="w-6 h-6 text-blue-500" />, title: "Planning", description: "Plan for any occasion, from holiday to family.", bgColor: "bg-fuchsia-50" },
-  { icon: <AssistantIcon className="w-6 h-6 text-yellow-500" />, title: "Assistant", description: "Become your personal assistant. Helping you.", bgColor: "bg-amber-50" },
+  { icon: <DraftEmailIcon className="w-6 h-6 fill-indigo-700" />, title: "Draft email", description: "Generate email for any occasion you need.", bgColor: "bg-indigo-50" },
+  { icon: <WriteEssayIcon className="w-6 h-6 fill-green-700" />, title: "Write an Essay", description: "Generate essay for any occasion you need.", bgColor: "bg-green-50" },
+  { icon: <PlanningIcon className="w-6 h-6 fill-fuchsia-600" />, title: "Planning", description: "Plan for any occasion, from holiday to family.", bgColor: "bg-fuchsia-50" },
+  { icon: <AssistantIcon className="w-6 h-6 fill-orange-500" />, title: "Assistant", description: "Become your personal assistant. Helping you.", bgColor: "bg-amber-50" },
 ];
 
 const Option: React.FC<{ icon: React.ReactNode, title: string, description: string, bgColor: string }> = ({ icon, title, description, bgColor }) => (

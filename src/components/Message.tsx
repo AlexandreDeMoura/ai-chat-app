@@ -14,7 +14,7 @@ const Message: React.FC<Props> = ({ message }) => (
         : 'bg-white text-gray-800 border border-gray-200'
     }`}>
       {!message.isUser && (
-        <ChatIcon className="w-6 h-6 mr-2 flex-shrink-0" />
+        <ChatIcon className="w-6 h-6 mr-2 flex-shrink-0 fill-indigo-700" />
       )}
       <div>{message.text}</div>
     </div>

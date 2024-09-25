@@ -12,10 +12,51 @@ interface Props {
 }
 
 const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNewChat, selectConversation }) => {
-  // Sort conversations by lastUpdated
-  const sortedConversations = [...conversations].sort((a, b) => 
-    b.lastUpdated.getTime() - a.lastUpdated.getTime()
-  );
+  const categorizeConversations = (conversations: Conversation[]) => {
+    const now = new Date();
+    const categories: { [key: string]: Conversation[] } = {
+      'Today': [],
+      'Yesterday': [],
+      'Last 7 days': [],
+      'Last 30 days': [],
+    };
+
+    // Add month categories for the last 12 months
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      categories[date.toLocaleString('default', { month: 'long', year: 'numeric' })] = [];
+    }
+
+    // Add year categories
+    const oldestYear = Math.min(...conversations.map(c => c.lastUpdated.getFullYear()));
+    for (let year = now.getFullYear() - 1; year >= oldestYear; year--) {
+      categories[year.toString()] = [];
+    }
+
+    conversations.forEach(conv => {
+      const diffDays = Math.floor((now.getTime() - conv.lastUpdated.getTime()) / (1000 * 3600 * 24));
+      if (diffDays === 0) {
+        categories['Today'].push(conv);
+      } else if (diffDays === 1) {
+        categories['Yesterday'].push(conv);
+      } else if (diffDays <= 7) {
+        categories['Last 7 days'].push(conv);
+      } else if (diffDays <= 30) {
+        categories['Last 30 days'].push(conv);
+      } else {
+        const monthYear = conv.lastUpdated.toLocaleString('default', { month: 'long', year: 'numeric' });
+        if (categories[monthYear]) {
+          categories[monthYear].push(conv);
+        } else {
+          categories[conv.lastUpdated.getFullYear().toString()].push(conv);
+        }
+      }
+    });
+
+    return Object.entries(categories).filter(([_, convs]) => convs.length > 0);
+  };
+
+  const categorizedConversations = categorizeConversations(conversations);
 
   return (
     <div className="w-64 bg-white border-r flex flex-col h-screen overflow-hidden">
@@ -25,20 +66,25 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
           <span className="font-semibold text-lg">Chat AI</span>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
-        {sortedConversations.map(conv => (
-          <div 
-            key={conv.id}
-            onClick={() => selectConversation(conv.id)}
-            className={`flex items-center p-2 rounded-lg cursor-pointer group 
-              ${currentConversation === conv.id ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
-          >
-            <SavedConvIcon className={`mr-2 flex-shrink-0 
-              ${currentConversation === conv.id ? 'fill-indigo-700' : 'fill-neutral-600 group-hover:fill-indigo-700'}`} />
-            <div className={`truncate 
-              ${currentConversation === conv.id ? 'text-indigo-700' : 'text-neutral-600 group-hover:text-indigo-700'}`}>
-              {conv.title.length > 30 ? `${conv.title.substring(0, 30)}...` : conv.title}
-            </div>
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {categorizedConversations.map(([category, convs]) => (
+          <div key={category}>
+            <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">{category}</h3>
+            {convs.map(conv => (
+              <div 
+                key={conv.id}
+                onClick={() => selectConversation(conv.id)}
+                className={`flex items-center p-2 rounded-lg cursor-pointer group 
+                  ${currentConversation === conv.id ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+              >
+                <SavedConvIcon className={`mr-2 flex-shrink-0 
+                  ${currentConversation === conv.id ? 'fill-indigo-700' : 'fill-neutral-600 group-hover:fill-indigo-700'}`} />
+                <div className={`truncate 
+                  ${currentConversation === conv.id ? 'text-indigo-700' : 'text-neutral-600 group-hover:text-indigo-700'}`}>
+                  {conv.title.length > 30 ? `${conv.title.substring(0, 30)}...` : conv.title}
+                </div>
+              </div>
+            ))}
           </div>
         ))}
       </div>

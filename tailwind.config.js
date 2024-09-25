@@ -10,4 +10,9 @@ module.exports = {
     },
   },
   plugins: [],
+  variants: {
+    extend: {
+      fill: ['hover', 'focus'],
+    }
+  },
 }

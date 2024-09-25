@@ -15,6 +15,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const savedConversations = localStorage.getItem('conversations');
+    console.log(savedConversations);
     if (savedConversations) {
       const parsedConversations = JSON.parse(savedConversations, (key, value) => {
         if (key === 'lastUpdated') {

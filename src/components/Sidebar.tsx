@@ -28,13 +28,15 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
     }
 
     // Add year categories
-    const oldestYear = Math.min(...conversations.map(c => c.lastUpdated.getFullYear()));
-    for (let year = now.getFullYear() - 1; year >= oldestYear; year--) {
+    const oldestYear = Math.min(...conversations.map(c => new Date(c.lastUpdated).getFullYear()));
+    for (let year = now.getFullYear(); year >= oldestYear; year--) {
       categories[year.toString()] = [];
     }
 
     conversations.forEach(conv => {
-      const diffDays = Math.floor((now.getTime() - conv.lastUpdated.getTime()) / (1000 * 3600 * 24));
+      const lastUpdated = new Date(conv.lastUpdated);
+      const diffDays = Math.floor((now.getTime() - lastUpdated.getTime()) / (1000 * 3600 * 24));
+      
       if (diffDays === 0) {
         categories['Today'].push(conv);
       } else if (diffDays === 1) {
@@ -44,16 +46,35 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
       } else if (diffDays <= 30) {
         categories['Last 30 days'].push(conv);
       } else {
-        const monthYear = conv.lastUpdated.toLocaleString('default', { month: 'long', year: 'numeric' });
+        const monthYear = lastUpdated.toLocaleString('default', { month: 'long', year: 'numeric' });
+        const year = lastUpdated.getFullYear().toString();
         if (categories[monthYear]) {
           categories[monthYear].push(conv);
-        } else {
-          categories[conv.lastUpdated.getFullYear().toString()].push(conv);
+        } else if (categories[year]) {
+          categories[year].push(conv);
         }
       }
     });
 
-    return Object.entries(categories).filter(([_, convs]) => convs.length > 0);
+    // Sort conversations within each category
+    Object.values(categories).forEach(categoryConvs => {
+      categoryConvs.sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime());
+    });
+
+    // Filter out empty categories and sort them
+    const sortedCategories = Object.entries(categories)
+      .filter(([_, convs]) => convs.length > 0)
+      .sort(([a], [b]) => {
+        const order = ['Today', 'Yesterday', 'Last 7 days', 'Last 30 days'];
+        const aIndex = order.indexOf(a);
+        const bIndex = order.indexOf(b);
+        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+        if (aIndex !== -1) return -1;
+        if (bIndex !== -1) return 1;
+        return b.localeCompare(a); // This will sort months and years in descending order
+      });
+
+    return sortedCategories;
   };
 
   const categorizedConversations = categorizeConversations(conversations);

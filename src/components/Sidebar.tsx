@@ -19,6 +19,7 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
       'Yesterday': [],
       'Last 7 days': [],
       'Last 30 days': [],
+      'Older': [], // Add an 'Older' category for conversations older than 12 months
     };
 
     // Add month categories for the last 12 months
@@ -27,15 +28,10 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
       categories[date.toLocaleString('default', { month: 'long', year: 'numeric' })] = [];
     }
 
-    // Add year categories
-    const oldestYear = Math.min(...conversations.map(c => new Date(c.lastUpdated).getFullYear()));
-    for (let year = now.getFullYear(); year >= oldestYear; year--) {
-      categories[year.toString()] = [];
-    }
-
     conversations.forEach(conv => {
       const lastUpdated = new Date(conv.lastUpdated);
       const diffDays = Math.floor((now.getTime() - lastUpdated.getTime()) / (1000 * 3600 * 24));
+      const diffMonths = (now.getFullYear() - lastUpdated.getFullYear()) * 12 + now.getMonth() - lastUpdated.getMonth();
       
       if (diffDays === 0) {
         categories['Today'].push(conv);
@@ -45,14 +41,11 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
         categories['Last 7 days'].push(conv);
       } else if (diffDays <= 30) {
         categories['Last 30 days'].push(conv);
-      } else {
+      } else if (diffMonths < 12) {
         const monthYear = lastUpdated.toLocaleString('default', { month: 'long', year: 'numeric' });
-        const year = lastUpdated.getFullYear().toString();
-        if (categories[monthYear]) {
-          categories[monthYear].push(conv);
-        } else if (categories[year]) {
-          categories[year].push(conv);
-        }
+        categories[monthYear].push(conv);
+      } else {
+        categories['Older'].push(conv);
       }
     });
 
@@ -71,7 +64,10 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
         if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
         if (aIndex !== -1) return -1;
         if (bIndex !== -1) return 1;
-        return b.localeCompare(a); // This will sort months and years in descending order
+        if (a === 'Older') return 1;
+        if (b === 'Older') return -1;
+        return new Date(b.split(' ')[0] + ' 1, ' + b.split(' ')[1]).getTime() - 
+               new Date(a.split(' ')[0] + ' 1, ' + a.split(' ')[1]).getTime();
       });
 
     return sortedCategories;
@@ -82,7 +78,7 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
   return (
     <div className="w-64 bg-white border-r flex flex-col h-screen overflow-hidden">
       <div className="p-4 border-b">
-        <div className="flex items-center mb-4">
+        <div onClick={startNewChat} className="flex items-center mb-4 cursor-pointer">
           <ChatIcon className="fill-indigo-700 mr-2" />
           <span className="font-semibold text-lg">Chat AI</span>
         </div>

@@ -1,8 +1,15 @@
-import React from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import { Conversation } from '../types/types';
+import ProfilPicture from '../img/alex_2.jpg';
 import { ReactComponent as ChatIcon } from '../img/chat-icon.svg';
 import { ReactComponent as NewChatIcon } from '../img/new-chat.svg';
 import { ReactComponent as SavedConvIcon } from '../img/saved-conv.svg';
+import { ReactComponent as MoreLineIcon } from '../img/more-line.svg';
+import { ReactComponent as LogoutIcon } from '../img/logout.svg';
+import { ReactComponent as SettingsIcon } from '../img/settings.svg';
+import SettingsPopup from './SettingsPopup';
+import { ThemeContext } from '../context/ThemeContext';
+import classNames from 'classnames';
 
 interface Props {
   conversations: Conversation[];
@@ -12,6 +19,24 @@ interface Props {
 }
 
 const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNewChat, selectConversation }) => {
+  const { theme } = useContext(ThemeContext);
+  const [showPopup, setShowPopup] = useState(false);
+  const [showSettingsPopup, setShowSettingsPopup] = useState(false); 
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+        setShowPopup(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const categorizeConversations = (conversations: Conversation[]) => {
     const now = new Date();
     const categories: { [key: string]: Conversation[] } = {
@@ -19,7 +44,7 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
       'Yesterday': [],
       'Last 7 days': [],
       'Last 30 days': [],
-      'Older': [], // Add an 'Older' category for conversations older than 12 months
+      'Older': [],
     };
 
     // Add month categories for the last 12 months
@@ -75,12 +100,17 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
 
   const categorizedConversations = categorizeConversations(conversations);
 
+  const toggleSettingsPopup = () => {
+    setShowSettingsPopup((prev) => !prev);
+    setShowPopup(false); // Close the more options popup
+  };
+
   return (
-    <div className="w-64 bg-white border-r flex flex-col h-screen overflow-hidden">
+    <div className={`w-64 border-r flex flex-col h-screen overflow-hidden ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
       <div className="p-4 border-b">
-        <div onClick={startNewChat} className="flex items-center mb-4 cursor-pointer">
+        <div onClick={startNewChat} className="flex items-center cursor-pointer">
           <ChatIcon className="fill-indigo-700 mr-2" />
-          <span className="font-semibold text-lg">Chat AI</span>
+          <span className={`font-semibold text-lg ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Chat AI</span>
         </div>
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -91,13 +121,38 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
               <div 
                 key={conv.id}
                 onClick={() => selectConversation(conv.id)}
-                className={`flex items-center p-2 rounded-lg cursor-pointer group 
-                  ${currentConversation === conv.id ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+                className={classNames(
+                  'flex items-center p-2 rounded-lg cursor-pointer group',
+                  {
+                    'bg-gray-100': currentConversation === conv.id && theme !== 'dark',
+                    'bg-gray-700': currentConversation === conv.id && theme === 'dark',
+                    'hover:bg-gray-50': currentConversation !== conv.id && theme !== 'dark',
+                    'hover:bg-gray-700': currentConversation !== conv.id && theme === 'dark'
+                  }
+                )}
               >
-                <SavedConvIcon className={`mr-2 flex-shrink-0 
-                  ${currentConversation === conv.id ? 'fill-indigo-700' : 'fill-neutral-600 group-hover:fill-indigo-700'}`} />
-                <div className={`truncate 
-                  ${currentConversation === conv.id ? 'text-indigo-700' : 'text-neutral-600 group-hover:text-indigo-700'}`}>
+                <SavedConvIcon className={classNames(
+                  'mr-2 flex-shrink-0',
+                  {
+                    'fill-indigo-700': currentConversation === conv.id && theme !== 'dark',
+                    'fill-indigo-400': currentConversation === conv.id && theme === 'dark',
+                    'fill-neutral-600': currentConversation !== conv.id && theme !== 'dark',
+                    'fill-white': currentConversation !== conv.id && theme === 'dark',
+                    'group-hover:fill-indigo-700': currentConversation !== conv.id && theme !== 'dark',
+                    'group-hover:fill-indigo-400': currentConversation !== conv.id && theme === 'dark'
+                  }
+                )} />
+                <div className={classNames(
+                  'truncate',
+                  {
+                    'text-indigo-700': currentConversation === conv.id && theme !== 'dark',
+                    'text-indigo-400': currentConversation === conv.id && theme === 'dark',
+                    'text-neutral-600': currentConversation !== conv.id && theme !== 'dark',
+                    'text-gray-300': currentConversation !== conv.id && theme === 'dark',
+                    'group-hover:text-indigo-700': currentConversation !== conv.id && theme !== 'dark',
+                    'group-hover:text-indigo-400': currentConversation !== conv.id && theme === 'dark'
+                  }
+                )}>
                   {conv.title.length > 30 ? `${conv.title.substring(0, 30)}...` : conv.title}
                 </div>
               </div>
@@ -106,14 +161,19 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
         ))}
       </div>
       <div className="p-4 border-t">
-        <button 
+      <button 
           onClick={startNewChat}
-          className="w-full p-2 mb-4 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 flex items-center justify-center"
+          className={classNames("w-full p-2 mb-4 border border-gray-300 rounded-lg flex items-center justify-center shadow-sm", {
+            'bg-gray-700 text-white hover:bg-gray-600': theme === 'dark',
+            'bg-white text-gray-700 hover:bg-gray-50': theme !== 'dark' 
+          })}
         >
-          <NewChatIcon width={18} height={18} className="mr-2" />
-          <span className="text-sm font-medium">Start new chat</span>
+          <NewChatIcon width={18} height={18} className="mr-2" fill={theme === 'dark' ? 'white' : 'black'} /> 
+          <span className="text-sm font-medium">
+            Start new chat
+          </span>
         </button>
-        <div className="bg-gray-100 rounded-lg p-4">
+        {/* <div className="bg-gray-100 rounded-lg p-4">
           <h3 className="font-medium mb-1">Let's create an account</h3>
           <p className="text-sm text-gray-600 mb-3">Save your chat history, share chat, and personalize your experience.</p>
           <button className="w-full p-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 mb-2">
@@ -122,8 +182,64 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
           <button className="w-full p-2 text-purple-500 hover:bg-gray-200 rounded-lg">
             Create account
           </button>
+        </div> */}
+        <div className="flex items-center justify-between mt-6 px-4">
+          <div className="flex items-center">
+            <img src={ProfilPicture} alt="Profile" className="w-6 h-6 rounded-full mr-2" />
+            <span className={classNames("font-medium text-base", {
+              'text-white': theme === 'dark',
+              'text-black': theme !== 'dark'
+            })}>Alexandre</span>
+          </div>
+          <div className="relative">
+            <button 
+              className="text-gray-600 hover:text-gray-800"
+              onClick={() => setShowPopup((prev) => !prev)}
+            >
+              <MoreLineIcon className={classNames('w-6 h-6', {'fill-white': theme === 'dark'})}/>
+            </button>
+            {showPopup && (
+              <div 
+                ref={popupRef}
+                className={classNames(
+                  "absolute right-0 bottom-full mb-2 w-48 rounded-md shadow-xl border py-1 z-50",
+                  {
+                    "bg-white border-gray-200": theme !== 'dark',
+                    "bg-gray-800 border-gray-700": theme === 'dark'
+                  }
+                )}
+              >
+                <button 
+                  onClick={toggleSettingsPopup} 
+                  className={classNames(
+                    "flex items-center px-4 py-2 text-sm w-full",
+                    {
+                      "text-gray-700 hover:bg-gray-100": theme !== 'dark',
+                      "text-gray-300 hover:bg-gray-700": theme === 'dark'
+                    }
+                  )}
+                >
+                  <SettingsIcon className={`mr-2 w-5 h-5 ${theme === 'dark' ? 'fill-gray-300' : 'fill-gray-700'}`} />
+                  Settings
+                </button>
+                <button 
+                  className={classNames(
+                    "flex items-center px-4 py-2 text-sm w-full",
+                    {
+                      "text-gray-700 hover:bg-gray-100": theme !== 'dark',
+                      "text-gray-300 hover:bg-gray-700": theme === 'dark'
+                    }
+                  )}
+                >
+                  <LogoutIcon className={`mr-2 w-5 h-5 ${theme === 'dark' ? 'fill-gray-300' : 'fill-gray-700'}`} />
+                  Sign out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+      {showSettingsPopup && <SettingsPopup onClose={toggleSettingsPopup} />}
     </div>
   );
 };

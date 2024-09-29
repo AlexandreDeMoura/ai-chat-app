@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Conversation, Message as MessageType } from './types/types';
 import Sidebar from './components/Sidebar';
 import Home from './screens/Home';
 import CurrentConversation from './screens/CurrentConversations';
 import MessageInput from './components/MessageInput';
+import { ThemeContext } from './context/ThemeContext';
 
 const App: React.FC = () => {
+  const { theme } = useContext(ThemeContext);
   const [conversations, setConversations] = useState<Conversation[]>(() => {
     const savedConversations = localStorage.getItem('conversations');
     return savedConversations ? JSON.parse(savedConversations) : [];
@@ -90,7 +92,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-white overflow-hidden">
+    <div className={`flex h-screen overflow-hidden ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
       <Sidebar 
         conversations={conversations}
         currentConversation={currentConversation}

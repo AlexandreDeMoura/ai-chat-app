@@ -10,6 +10,7 @@ import { ReactComponent as SettingsIcon } from '../img/settings.svg';
 import SettingsPopup from './SettingsPopup';
 import { ThemeContext } from '../context/ThemeContext';
 import classNames from 'classnames';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   conversations: Conversation[];
@@ -19,6 +20,7 @@ interface Props {
 }
 
 const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNewChat, selectConversation }) => {
+  const { t } = useTranslation();
   const { theme } = useContext(ThemeContext);
   const [showPopup, setShowPopup] = useState(false);
   const [showSettingsPopup, setShowSettingsPopup] = useState(false); 
@@ -40,17 +42,21 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
   const categorizeConversations = (conversations: Conversation[]) => {
     const now = new Date();
     const categories: { [key: string]: Conversation[] } = {
-      'Today': [],
-      'Yesterday': [],
-      'Last 7 days': [],
-      'Last 30 days': [],
-      'Older': [],
+      [t('sidebar.today', 'Today')]: [],
+      [t('sidebar.yesterday', 'Yesterday')]: [],
+      [t('sidebar.last7Days', 'Last 7 days')]: [],
+      [t('sidebar.last30Days', 'Last 30 days')]: [],
+      [t('sidebar.older', 'Older')]: [],
     };
 
     // Add month categories for the last 12 months
     for (let i = 0; i < 12; i++) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      categories[date.toLocaleString('default', { month: 'long', year: 'numeric' })] = [];
+      const monthYear = t('date.monthYear', '{{month}} {{year}}', {
+        month: t(`months.${date.getMonth()}`),
+        year: date.getFullYear()
+      });
+      categories[monthYear] = [];
     }
 
     conversations.forEach(conv => {
@@ -59,18 +65,21 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
       const diffMonths = (now.getFullYear() - lastUpdated.getFullYear()) * 12 + now.getMonth() - lastUpdated.getMonth();
       
       if (diffDays === 0) {
-        categories['Today'].push(conv);
+        categories[t('sidebar.today', 'Today')].push(conv);
       } else if (diffDays === 1) {
-        categories['Yesterday'].push(conv);
+        categories[t('sidebar.yesterday', 'Yesterday')].push(conv);
       } else if (diffDays <= 7) {
-        categories['Last 7 days'].push(conv);
+        categories[t('sidebar.last7Days', 'Last 7 days')].push(conv);
       } else if (diffDays <= 30) {
-        categories['Last 30 days'].push(conv);
+        categories[t('sidebar.last30Days', 'Last 30 days')].push(conv);
       } else if (diffMonths < 12) {
-        const monthYear = lastUpdated.toLocaleString('default', { month: 'long', year: 'numeric' });
+        const monthYear = t('date.monthYear', '{{month}} {{year}}', {
+          month: t(`months.${lastUpdated.getMonth()}`),
+          year: lastUpdated.getFullYear()
+        });
         categories[monthYear].push(conv);
       } else {
-        categories['Older'].push(conv);
+        categories[t('sidebar.older', 'Older')].push(conv);
       }
     });
 
@@ -83,16 +92,15 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
     const sortedCategories = Object.entries(categories)
       .filter(([_, convs]) => convs.length > 0)
       .sort(([a], [b]) => {
-        const order = ['Today', 'Yesterday', 'Last 7 days', 'Last 30 days'];
+        const order = [t('sidebar.today', 'Today'), t('sidebar.yesterday', 'Yesterday'), t('sidebar.last7Days', 'Last 7 days'), t('sidebar.last30Days', 'Last 30 days')];
         const aIndex = order.indexOf(a);
         const bIndex = order.indexOf(b);
         if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
         if (aIndex !== -1) return -1;
         if (bIndex !== -1) return 1;
-        if (a === 'Older') return 1;
-        if (b === 'Older') return -1;
-        return new Date(b.split(' ')[0] + ' 1, ' + b.split(' ')[1]).getTime() - 
-               new Date(a.split(' ')[0] + ' 1, ' + a.split(' ')[1]).getTime();
+        if (a === t('sidebar.older', 'Older')) return 1;
+        if (b === t('sidebar.older', 'Older')) return -1;
+        return new Date(b.split(' ')[1]).getTime() - new Date(a.split(' ')[1]).getTime();
       });
 
     return sortedCategories;
@@ -102,7 +110,7 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
 
   const toggleSettingsPopup = () => {
     setShowSettingsPopup((prev) => !prev);
-    setShowPopup(false); // Close the more options popup
+    setShowPopup(false);
   };
 
   return (
@@ -110,7 +118,7 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
       <div className="p-4 border-b">
         <div onClick={startNewChat} className="flex items-center cursor-pointer">
           <ChatIcon className="fill-indigo-700 mr-2" />
-          <span className={`font-semibold text-lg ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Chat AI</span>
+          <span className={`font-semibold text-lg ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{t('app.title')}</span>
         </div>
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -161,7 +169,7 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
         ))}
       </div>
       <div className="p-4 border-t">
-      <button 
+        <button 
           onClick={startNewChat}
           className={classNames("w-full p-2 mb-4 border border-gray-300 rounded-lg flex items-center justify-center shadow-sm", {
             'bg-gray-700 text-white hover:bg-gray-600': theme === 'dark',
@@ -170,19 +178,9 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
         >
           <NewChatIcon width={18} height={18} className="mr-2" fill={theme === 'dark' ? 'white' : 'black'} /> 
           <span className="text-sm font-medium">
-            Start new chat
+            {t('app.newChat')}
           </span>
         </button>
-        {/* <div className="bg-gray-100 rounded-lg p-4">
-          <h3 className="font-medium mb-1">Let's create an account</h3>
-          <p className="text-sm text-gray-600 mb-3">Save your chat history, share chat, and personalize your experience.</p>
-          <button className="w-full p-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 mb-2">
-            Sign in
-          </button>
-          <button className="w-full p-2 text-purple-500 hover:bg-gray-200 rounded-lg">
-            Create account
-          </button>
-        </div> */}
         <div className="flex items-center justify-between mt-6 px-4">
           <div className="flex items-center">
             <img src={ProfilPicture} alt="Profile" className="w-6 h-6 rounded-full mr-2" />
@@ -220,7 +218,7 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
                   )}
                 >
                   <SettingsIcon className={`mr-2 w-5 h-5 ${theme === 'dark' ? 'fill-gray-300' : 'fill-gray-700'}`} />
-                  Settings
+                  {t('app.settings')}
                 </button>
                 <button 
                   className={classNames(
@@ -232,7 +230,7 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
                   )}
                 >
                   <LogoutIcon className={`mr-2 w-5 h-5 ${theme === 'dark' ? 'fill-gray-300' : 'fill-gray-700'}`} />
-                  Sign out
+                  {t('app.signOut')}
                 </button>
               </div>
             )}

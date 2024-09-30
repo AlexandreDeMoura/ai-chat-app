@@ -1,0 +1,54 @@
+{
+  "app": {
+    "title": "Chat IA",
+    "newChat": "Nouvelle conversation",
+    "settings": "Paramètres",
+    "signOut": "Déconnexion"
+  },
+  "home": {
+    "titleBold": "Salut, je suis Chat IA.",
+    "titleNormal": "Votre assistant IA et compagnon pour toute occasion.",
+    "draftEmail": "Rédiger un e-mail",
+    "draftEmailDesc": "Générer un e-mail pour toute occasion dont vous avez besoin.",
+    "writeEssay": "Écrire un essai",
+    "writeEssayDesc": "Générer un essai pour toute occasion dont vous avez besoin.",
+    "planning": "Planification",
+    "planningDesc": "Planifier pour toute occasion, des vacances à la famille.",
+    "assistant": "Assistant",
+    "assistantDesc": "Devenir votre assistant personnel. Vous aider."
+  },
+  "chat": {
+    "placeholder": "Tapez un message...",
+    "send": "Envoyer",
+    "submit": "Envoyer"
+  },
+  "sidebar": {
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "last7Days": "7 derniers jours",
+    "last30Days": "30 derniers jours",
+    "older": "Plus ancien"
+  },
+  "date": {
+    "monthYear": "{{month}} {{year}}"
+  },
+  "months": {
+    "0": "Janvier",
+    "1": "Février",
+    "2": "Mars",
+    "3": "Avril",
+    "4": "Mai",
+    "5": "Juin",
+    "6": "Juillet",
+    "7": "Août",
+    "8": "Septembre",
+    "9": "Octobre",
+    "10": "Novembre",
+    "11": "Décembre"
+  },
+  "theme": {
+    "title": "Thème",
+    "light": "Clair",
+    "dark": "Sombre"
+  }
+}

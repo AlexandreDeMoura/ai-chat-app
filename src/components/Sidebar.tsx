@@ -33,7 +33,7 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
   };
 
   return (
-    <div className={`w-64 border-r flex flex-col h-screen overflow-hidden ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+    <div data-testid="sidebar" className={`w-64 border-r flex flex-col h-screen overflow-hidden ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
       <div className="p-4 border-b">
         <div onClick={startNewChat} className="flex items-center cursor-pointer">
           <ChatIcon className="fill-indigo-700 mr-2" />

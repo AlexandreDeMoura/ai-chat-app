@@ -2,8 +2,15 @@
   "app": {
     "title": "Chat AI",
     "newChat": "Start new chat",
-    "settings": "Settings",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "apiKeySetup": "API key setup"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark"
   },
   "home": {
     "titleBold": "Hey, I'm Chat AI.",
@@ -46,9 +53,35 @@
     "10": "November",
     "11": "December"
   },
-  "theme": {
-    "title": "Theme",
-    "light": "Light",
-    "dark": "Dark"
+  "api_settings": {
+    "title": "Enter Your OpenAI API Key",
+    "description": "You need an OpenAI API Key to use this app. Your API Key will be stored locally on your browser.",
+    "placeholder": "sk-xxxxxxxxxxxxxxxxxxxxxxxx",
+    "getApiKey": "Go to OpenAI to get your API key",
+    "save": "Save",
+    "cancel": "Cancel",
+    "faqs": "FAQs",
+    "faq": {
+      "apiKeyNotWorking": {
+        "question": "API key not working?",
+        "answer": "Make sure you've entered the correct API key. If the issue persists, check your OpenAI account for any restrictions or billing issues."
+      },
+      "apiKeyHandling": {
+        "question": "How is the API key handled?",
+        "answer": "Your API key is stored locally in your browser and is never sent to our servers. It's used only to communicate directly with OpenAI's services."
+      },
+      "chatGptPlusRequired": {
+        "question": "Do I need ChatGPT Plus to get an API key?",
+        "answer": "No, ChatGPT Plus is not required. You only need a standard OpenAI account to get an API key."
+      },
+      "apiKeyPayment": {
+        "question": "Do I need to pay for an API key from OpenAI?",
+        "answer": "While the API key itself is free, usage of OpenAI's API is billed based on the number of tokens processed. Check OpenAI's pricing page for current rates."
+      },
+      "licenseVsApiKey": {
+        "question": "License key vs. API key",
+        "answer": "The API key is different from a license key. The API key is used to authenticate requests to OpenAI's services, while a license key (if applicable) would be for our application."
+      }
+    }
   }
 }

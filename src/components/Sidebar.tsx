@@ -11,6 +11,8 @@ import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
 import OptionsPopup from './OptionsPopup';
 import handleDatesCategorization from '../utils/handleDatesCategorization';
+import { ReactComponent as KeyIcon } from '../img/key-icon.svg';
+import ApiKeyPopup from './ApiKeyPopup';
 
 interface Props {
   conversations: Conversation[];
@@ -24,6 +26,7 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
   const { theme } = useContext(ThemeContext);
   const [showOptionsPopup, setShowOptionsPopup] = useState(false);
   const [showSettingsPopup, setShowSettingsPopup] = useState(false);
+  const [showApiKeyPopup, setShowApiKeyPopup] = useState(false);
 
   const categorizedConversations = handleDatesCategorization(conversations);
 
@@ -39,13 +42,26 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
           <ChatIcon className="fill-indigo-700 mr-2" />
           <span className={`font-semibold text-lg ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{t('app.title')}</span>
         </div>
+        <button
+          onClick={() => setShowApiKeyPopup(true)}
+          className={classNames(
+            "flex items-center w-full pl-1 py-2 mt-2 text-sm",
+            {
+              "text-gray-700": theme !== 'dark',
+              "text-gray-300": theme === 'dark'
+            }
+          )}
+        >
+          <KeyIcon className={`mr-2 w-5 h-5 ${theme === 'dark' ? 'fill-gray-300' : 'fill-gray-700'}`} />
+          {t('app.apiKeySetup')}
+        </button>
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {categorizedConversations.map(([category, convs]) => (
           <div key={category}>
             <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">{category}</h3>
             {convs.map(conv => (
-              <div 
+              <div
                 key={conv.id}
                 onClick={() => selectConversation(conv.id)}
                 className={classNames(
@@ -88,14 +104,14 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
         ))}
       </div>
       <div className="p-4 border-t">
-        <button 
+        <button
           onClick={startNewChat}
           className={classNames("w-full p-2 mb-4 border border-gray-300 rounded-lg flex items-center justify-center shadow-sm", {
             'bg-gray-700 text-white hover:bg-gray-600': theme === 'dark',
-            'bg-white text-gray-700 hover:bg-gray-50': theme !== 'dark' 
+            'bg-white text-gray-700 hover:bg-gray-50': theme !== 'dark'
           })}
         >
-          <NewChatIcon width={18} height={18} className="mr-2" fill={theme === 'dark' ? 'white' : 'black'} /> 
+          <NewChatIcon width={18} height={18} className="mr-2" fill={theme === 'dark' ? 'white' : 'black'} />
           <span className="text-sm font-medium">
             {t('app.newChat')}
           </span>
@@ -109,13 +125,13 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
             })}>Alexandre</span>
           </div>
           <div className="relative">
-            <button 
+            <button
               className="text-gray-600 hover:text-gray-800"
               onClick={() => setShowOptionsPopup((prev) => !prev)}
             >
-              <MoreLineIcon className={classNames('w-6 h-6', {'fill-white': theme === 'dark'})}/>
+              <MoreLineIcon className={classNames('w-6 h-6', { 'fill-white': theme === 'dark' })} />
             </button>
-            <OptionsPopup 
+            <OptionsPopup
               isOpen={showOptionsPopup}
               onClose={() => setShowOptionsPopup(false)}
               onSettingsClick={toggleSettingsPopup}
@@ -124,6 +140,7 @@ const Sidebar: React.FC<Props> = ({ conversations, currentConversation, startNew
         </div>
       </div>
       {showSettingsPopup && <SettingsPopup onClose={toggleSettingsPopup} />}
+      {showApiKeyPopup && <ApiKeyPopup onClose={() => setShowApiKeyPopup(false)} />}
     </div>
   );
 };

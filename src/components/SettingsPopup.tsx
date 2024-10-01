@@ -40,7 +40,7 @@ const SettingsPopup: React.FC<Props> = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div 
+      <div
         ref={popupRef}
         className={classNames(
           "rounded-md shadow-xl border p-6 w-96 max-w-full relative",
@@ -66,12 +66,12 @@ const SettingsPopup: React.FC<Props> = ({ onClose }) => {
         <h2 className={classNames(
           "text-2xl font-semibold mb-4",
           { "text-white": theme === 'dark' }
-        )}>{t('settings')}</h2>
+        )}>{t('settings.title')}</h2>
         <div className="flex items-center mb-4">
           <span className={classNames(
             "mr-2",
             { "text-white": theme === 'dark' }
-          )}>{t('theme.title')}:</span>
+          )}>{t('settings.theme')}:</span>
           <button
             onClick={() => toggleTheme(theme === 'light' ? 'dark' : 'light')}
             className={classNames(
@@ -89,7 +89,7 @@ const SettingsPopup: React.FC<Props> = ({ onClose }) => {
           <span className={classNames(
             "mr-2",
             { "text-white": theme === 'dark' }
-          )}>{t('language')}:</span>
+          )}>{t('settings.language')}:</span>
           <select
             value={i18n.language as SupportedLanguage}
             onChange={(e) => changeLanguage(e.target.value as SupportedLanguage)}

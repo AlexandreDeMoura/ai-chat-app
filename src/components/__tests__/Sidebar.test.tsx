@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { ThemeProvider } from '../../context/ThemeContext';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '../../i18n.test';
@@ -18,6 +18,7 @@ const mockConversations = [
 ];
 
 const renderSidebar = (theme: 'light' | 'dark') => {
+  localStorage.setItem('theme', theme);
   return render(
     <ThemeProvider>
       <I18nextProvider i18n={i18n}>
@@ -41,7 +42,6 @@ describe('Sidebar', () => {
   });
 
   it('renders correctly in dark theme', () => {
-    localStorage.setItem('theme', 'dark');
     renderSidebar('dark');
     const sidebarElement = screen.getByTestId('sidebar');
     expect(sidebarElement).toHaveClass('bg-gray-800');
@@ -57,7 +57,7 @@ describe('Sidebar', () => {
   it('highlights the current conversation', () => {
     renderSidebar('light');
     const currentConversation = screen.getByText('Conversation 1').closest('div');
-    expect(currentConversation).toHaveClass('text-indigo-400');
+    expect(currentConversation).toHaveClass('truncate text-indigo-700');
   });
 
   it('renders the "Start new chat" button', () => {

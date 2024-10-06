@@ -34,7 +34,13 @@
     "yesterday": "Hier",
     "last7Days": "7 derniers jours",
     "last30Days": "30 derniers jours",
-    "older": "Plus ancien"
+    "older": "Plus ancien",
+    "createAccount": {
+      "title": "Créons un compte",
+      "description": "Sauvegardez et partagez vos conversations, et personnalisez votre expérience.",
+      "signIn": "Se connecter",
+      "create": "Créer un compte"
+    }
   },
   "date": {
     "monthYear": "{{month}} {{year}}"

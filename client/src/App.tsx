@@ -1,83 +1,159 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Conversation, Message as MessageType } from './types/types';
+import React, { useState, useEffect, useContext, FC } from 'react';
+import axios from 'axios';
 import Sidebar from './components/Sidebar';
 import Home from './screens/Home';
 import CurrentConversation from './screens/CurrentConversations';
 import MessageInput from './components/MessageInput';
 import { ThemeContext } from './context/ThemeContext';
+import { AuthContext, AuthContextType, AuthProvider } from './AuthContext';
+import { Conversation, Message as MessageType } from './types/types';
 
-const App: React.FC = () => {
+const App: FC = () => {
   const { theme } = useContext(ThemeContext);
-  const [conversations, setConversations] = useState<Conversation[]>(() => {
-    const savedConversations = localStorage.getItem('conversations');
-    return savedConversations ? JSON.parse(savedConversations) : [];
-  });
+  const { user, getToken, loading, conversations, updateConversations, addConversation } = useContext(AuthContext) as AuthContextType;
+
   const [currentConversation, setCurrentConversation] = useState<string | null>(null);
-  const [showHome, setShowHome] = useState(true);
+  const [showHome, setShowHome] = useState<boolean>(true);
 
   useEffect(() => {
-    const savedConversations = localStorage.getItem('conversations');
-    console.log(savedConversations);
-    if (savedConversations) {
-      const parsedConversations = JSON.parse(savedConversations, (key, value) => {
-        if (key === 'lastUpdated') {
-          return new Date(value);
-        }
-        return value;
-      });
-      setConversations(parsedConversations);
+    if (user && !loading) {
+      fetchConversations();
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loading]);
 
-  useEffect(() => {
-    localStorage.setItem('conversations', JSON.stringify(conversations, (key, value) => {
-      if (key === 'lastUpdated') {
-        return value;
+  const fetchConversations = async () => {
+    try {
+      const token = await getToken();
+      if (!token) {
+        console.error('No token available');
+        return;
       }
-      return value;
-    }));
-  }, [conversations]);
+      const response = await axios.get<Conversation[]>('/api/conversations', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      updateConversations(response.data);
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+    }
+  };
 
-  const handleSubmit = (input: string) => {
+  const handleSubmit = async (input: string) => {
     if (input.trim()) {
       const newMessage: MessageType = { text: input, isUser: true };
       const currentTime = new Date();
+      const token = await getToken();
+
+      if (!token) {
+        console.error('No token available');
+        return;
+      }
+
       if (currentConversation) {
-        setConversations(prevConversations => 
-          prevConversations.map(conv => 
-            conv.id === currentConversation 
-              ? { ...conv, messages: [...conv.messages, newMessage], lastUpdated: currentTime }
-              : conv
-          )
-        );
+        // Update existing conversation
+        try {
+          const existingConversation = conversations.find(
+            (conv) => conv.id === currentConversation
+          );
+          if (!existingConversation) {
+            console.error('Conversation not found');
+            return;
+          }
+
+          const updatedMessages = [...existingConversation.messages, newMessage];
+          const response = await axios.put<Conversation>(
+            `/api/conversations/${currentConversation}`,
+            {
+              messages: updatedMessages,
+              lastUpdated: currentTime,
+            },
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          updateConversations(
+            conversations.map((conv) =>
+              conv.id === currentConversation ? response.data : conv
+            )
+          );
+        } catch (error) {
+          console.error('Error updating conversation:', error);
+          return;
+        }
+
         simulateAIResponse(currentConversation);
       } else {
-        const newConversationId = Date.now().toString();
-        const newConversation: Conversation = {
-          id: newConversationId,
-          title: input.slice(0, 30),
-          messages: [newMessage],
-          lastUpdated: currentTime
-        };
-        setConversations(prev => [...prev, newConversation]);
-        setCurrentConversation(newConversationId);
-        simulateAIResponse(newConversationId);
+        // Create a new conversation
+        try {
+          const response = await axios.post<Conversation>(
+            '/api/conversations',
+            {
+              title: input.slice(0, 30),
+              messages: [newMessage],
+              lastUpdated: currentTime,
+            },
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          addConversation(response.data);
+          setCurrentConversation(response.data.id);
+          simulateAIResponse(response.data.id);
+        } catch (error) {
+          console.error('Error creating conversation:', error);
+          return;
+        }
       }
+
       setShowHome(false);
     }
   };
 
-  const simulateAIResponse = (convId: string) => {
-    setTimeout(() => {
-      const aiResponse: MessageType = { text: "This is a simulated AI response.", isUser: false };
+  const simulateAIResponse = async (convId: string) => {
+    setTimeout(async () => {
+      const aiResponse: MessageType = {
+        text: 'This is a simulated AI response.',
+        isUser: false,
+      };
       const currentTime = new Date();
-      setConversations(prevConversations => 
-        prevConversations.map(conv => 
-          conv.id === convId 
-            ? { ...conv, messages: [...conv.messages, aiResponse], lastUpdated: currentTime }
-            : conv
-        )
-      );
+      const token = await getToken();
+
+      if (!token) {
+        console.error('No token available');
+        return;
+      }
+
+      try {
+        const existingConversation = conversations.find(
+          (conv) => conv.id === convId
+        );
+        if (!existingConversation) {
+          console.error('Conversation not found for AI response');
+          return;
+        }
+
+        const updatedMessages = [
+          ...existingConversation.messages,
+          aiResponse,
+        ];
+        const response = await axios.put<Conversation>(
+          `/api/conversations/${convId}`,
+          {
+            messages: updatedMessages,
+            lastUpdated: currentTime,
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        updateConversations(
+          conversations.map((conv) =>
+            conv.id === convId ? response.data : conv
+          )
+        );
+      } catch (error) {
+        console.error('Error updating conversation with AI response:', error);
+      }
     }, 1000);
   };
 
@@ -92,22 +168,22 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className={`flex h-screen overflow-hidden ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
-      <Sidebar 
-        conversations={conversations}
+    <div
+      className={`flex h-screen overflow-hidden ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}
+    >
+      <Sidebar
         currentConversation={currentConversation}
         startNewChat={startNewChat}
         selectConversation={selectConversation}
       />
-      <div className="flex-1 flex flex-col">
-        {showHome 
-          ? <Home /> 
-          : <CurrentConversation 
-              conversation={conversations.find(conv => conv.id === currentConversation)}
-            />
+      <Home />
+      <CurrentConversation
+        conversation={
+          conversations.find((conv) => conv.id === currentConversation) ||
+          undefined
         }
-        <MessageInput onSubmit={handleSubmit} />
-      </div>
+      />
+      <MessageInput onSubmit={handleSubmit} />
     </div>
   );
 };

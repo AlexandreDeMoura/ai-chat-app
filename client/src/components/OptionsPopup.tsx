@@ -9,9 +9,10 @@ interface Props {
     isOpen: boolean;
     onClose: () => void;
     onSettingsClick: () => void;
+    onLogout: () => void;
 }
 
-const OptionsPopup: React.FC<Props> = ({ isOpen, onClose, onSettingsClick }) => {
+const OptionsPopup: React.FC<Props> = ({ isOpen, onClose, onSettingsClick, onLogout }) => {
     const { t } = useTranslation();
     const { theme } = useContext(ThemeContext);
     const popupRef = useRef<HTMLDivElement>(null);
@@ -58,6 +59,7 @@ const OptionsPopup: React.FC<Props> = ({ isOpen, onClose, onSettingsClick }) => 
                 {t('settings.title')}
             </button>
             <button
+                onClick={onLogout}
                 className={classNames(
                     "flex items-center px-4 py-2 text-sm w-full",
                     {
